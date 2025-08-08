@@ -1,0 +1,16 @@
+{
+  "images" : [
+    {
+      "filename" : "62_pro_dry_cleaning_p_and_h_mild.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "template"
+  }
+}

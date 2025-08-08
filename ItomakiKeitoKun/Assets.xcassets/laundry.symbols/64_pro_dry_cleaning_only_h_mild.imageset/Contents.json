@@ -1,0 +1,16 @@
+{
+  "images" : [
+    {
+      "filename" : "64_pro_dry_cleaning_only_h_mild.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "template"
+  }
+}
