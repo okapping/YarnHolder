@@ -1,0 +1,33 @@
+{
+  "originHash" : "03cc654cb1c36450ffbd6ab0ecc0924614c20b9f28ffaad70bf94d64eb072687",
+  "pins" : [
+    {
+      "identity" : "swiftui-flow",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tevelee/SwiftUI-Flow",
+      "state" : {
+        "revision" : "d227f999b2894ab737ef5786d9b14d02d3e5362e",
+        "version" : "3.1.1"
+      }
+    },
+    {
+      "identity" : "tocropviewcontroller",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimOliver/TOCropViewController.git",
+      "state" : {
+        "revision" : "a634cb7cdfd580006e79a6e74e64417fe9e9783b",
+        "version" : "2.7.4"
+      }
+    },
+    {
+      "identity" : "zoomable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ryohey/Zoomable.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "525c0e1784825261b84d21c5cd5a159245a40ea6"
+      }
+    }
+  ],
+  "version" : 3
+}
