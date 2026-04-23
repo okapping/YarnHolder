@@ -198,20 +198,8 @@ struct YarnStockerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-//            ZoomTransition()
-//            FeedbackListView()
                 .preferredColorScheme(AppearanceModeSetting(rawValue: appearanceMode)?.colorScheme)
         }
         .modelContainer(sharedModelContainer)
-//        .modelContainer(for: [
-//            Folder.self,
-//            YarnInfo.self,
-//            YarnMaterial.self,
-//            YarnStock.self,
-//            Tag.self,
-//            Swatch.self,
-//            YarnStockDetail.self,
-//            YarnStockStatus.self
-//        ])
     }
 }

@@ -18,18 +18,16 @@ struct YarnsDetailLabelInfoView: View {
     @AppStorage("appColorTheme") var appColorTheme = 10
     @AppStorage("weightUnit") var weightUnit = "g"
     @AppStorage("lengthUnit") var lengthUnit = "m"
-
-    var yarnInfo: YarnInfo
+    
+    //    var yarnInfo: YarnInfo
+    @Environment(YarnInfo.self) var yarnInfo
     
     // delete yarn
     @State private var showYarnDeleteSheet = false
     @State private var showYarnArchiveSheet = false
     @Environment(\.presentationMode) var presentation
     
-    // 画像拡大用
-    @State private var showFullImage = false
-    @State private var showImages: [showImageContainer] = []
-    @State private var showImageIndex: Int = 0
+    @State private var showLaundrySymbols = false
     
     func dispNeedleSizeLabel(from needle: KnittingNeedlesSize) -> String {
         let code = locale.language.languageCode?.identifier ?? ""
@@ -47,7 +45,7 @@ struct YarnsDetailLabelInfoView: View {
             return "\(needle.mmSize)mm"
         }
     }
-
+    
     var body: some View {
         // *******************************************
         List {
@@ -59,7 +57,7 @@ struct YarnsDetailLabelInfoView: View {
                         Image(systemName: "leaf.fill")
                             .font(.title3)
                         ListTitleView(title: "KEY_FIBER_TYPE")
-                }
+                    }
             ) {
                 if let wrappedMaterials = yarnInfo.materials{
                     if wrappedMaterials.isEmpty {
@@ -67,6 +65,7 @@ struct YarnsDetailLabelInfoView: View {
                     }
                     ForEach(wrappedMaterials.sorted(by: { $0.orderIndex < $1.orderIndex })) {yarnMaterial in
                         HStack {
+                            //                        Text("\(yarnMaterial.orderIndex)")
                             let material = getYarnMaterial(by: yarnMaterial.materialId)
                             let name = LocalizedStringKey(material.name)
                             Text(name)
@@ -75,7 +74,6 @@ struct YarnsDetailLabelInfoView: View {
                         }
                         
                     }
-
                 }
             }
             // *******************************************
@@ -88,45 +86,52 @@ struct YarnsDetailLabelInfoView: View {
                         ListTitleView(title: "KEY_CARE_LABEL")
                     }
             ) {
-                NavigationLink{
-                    List{
+                HStack {
+                    if yarnInfo.laundrySymbols.isEmpty {
+                        Text("KEY_NOT_REGISTERED")
+                    }
+                    HFlow(spacing: 8) {
                         ForEach(yarnInfo.laundrySymbols, id: \.self) { symId in
                             if let symbol = getLaundrySymbol(by: symId){
-                                HStack {
-                                    Image(symbol.name)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 40, height: 40)
-                                        .foregroundColor(.primary)
-                                    Text(LocalizedStringKey(symbol.detail))
-                                }
+                                Image(symbol.name)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 40, height: 40)
+                                    .foregroundColor(.primary)
                             }
                         }
                     }
-                } label: {
-                    HStack {
-                        if yarnInfo.laundrySymbols.isEmpty {
-                            Text("KEY_NOT_REGISTERED")
-                        }
-                        HFlow(spacing: 8) {
-                            ForEach(yarnInfo.laundrySymbols, id: \.self) { symId in
-                                if let symbol = getLaundrySymbol(by: symId){
-                                    Image(symbol.name)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 40, height: 40)
-                                        .foregroundColor(.primary)
-                                }
+                    Spacer()
+                    Image(systemName: "chevron.forward")
+                        .rotationEffect(Angle(degrees: showLaundrySymbols ? 90 : 0))
+                        .foregroundStyle(.secondary)
+                        .font(.caption.bold())
+                }
+                .contentShape(.rect)
+                .onTapGesture{
+                    withAnimation{
+                        showLaundrySymbols.toggle()
+                    }
+                }
+                if showLaundrySymbols {
+                    ForEach(yarnInfo.laundrySymbols, id: \.self) { symId in
+                        if let symbol = getLaundrySymbol(by: symId){
+                            HStack {
+                                Image(symbol.name)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 25, height: 25)
+                                    .foregroundColor(.primary)
+                                Text(LocalizedStringKey(symbol.detail))
                             }
                         }
                     }
                 }
             }
-            
             // *******************************************
             // 基本情報
             Section(
-//                header: ListTitleView(title: "基本情報")
+                //                header: ListTitleView(title: "基本情報")
             ) {
                 // 標準ゲージ
                 HStack{
@@ -189,16 +194,6 @@ struct YarnsDetailLabelInfoView: View {
                 }
                 
             }
-            Section(
-                header:
-                    HStack {
-                        Image(systemName: "note.text")
-                            .font(.title3)
-                        ListTitleView(title: "KEY_MEMO")
-                    }
-            ) {
-                Text(yarnInfo.memo)
-            }
             Section() {
                 Button(role: .destructive) {
                     showYarnDeleteSheet = true
@@ -211,28 +206,60 @@ struct YarnsDetailLabelInfoView: View {
                     
                 }
                 .tint(.red)
-            }
-
-        }
-        // 削除確認用
-        .actionSheet(isPresented: $showYarnDeleteSheet){
-            ActionSheet(
-                title: Text("KEY_CONFIRM_DELETE_YARN"),
-                //                message: Text("削除後は戻せません。削除してもよろしいですか？"),
-                buttons:[
-                    .destructive(Text("KEY_DELETE_YARN")){
+                .confirmationDialog(
+                    "KEY_CONFIRM_DELETE_YARN",
+                    isPresented: $showYarnDeleteSheet,
+                    titleVisibility: .visible
+                ) {
+                    Button("KEY_CANCEL", role: .cancel) {
+                        //                        openCamera()
+                    }
+                    //                    Button("ライブラリから選択") {
+                    //                        openLibrary()
+                    //                    }
+                    Button("KEY_DELETE_YARN", role: .destructive) {
                         deleteYarnInfo(yarnInfo: yarnInfo)
-                    },
-                        .cancel()
-                ]
-            )
+                    }
+                    //                } message: {
+                    //                    Text("画像の取得方法を選択してください")
+                }
+            }
+            .listRowBackground(Color.clear)
         }
-        .fullScreenCover(isPresented: $showFullImage, onDismiss: {
-            showImages = []
-        }, content: {
-            FullImagesView(images: $showImages, selectIndex: $showImageIndex)
-        })
-
+        // 背景を変えれるようにする
+        //        .modifier{ content in
+        //            if !yarnInfo.images.isEmpty {
+        //                if let image = yarnInfo.images.first{
+        //                    if let uiImage = UIImage(data: image){
+        //                        content
+        //                            .scrollContentBackground(.hidden)
+        //                            .background{
+        //                                Color.black
+        //                                    .ignoresSafeArea()
+        //                                Image(uiImage: uiImage)
+        //                                    .resizable()
+        //                                    .scaledToFill()
+        //                                    .opacity(0.75)
+        //                                    .ignoresSafeArea()
+        //
+        //                            }
+        //                    }
+        //                }
+        //            } else {content}
+        //        }
+        // 削除確認用
+        //        .actionSheet(isPresented: $showYarnDeleteSheet){
+        //            ActionSheet(
+        //                title: Text("KEY_CONFIRM_DELETE_YARN"),
+        //                //                message: Text("削除後は戻せません。削除してもよろしいですか？"),
+        //                buttons:[
+        //                    .destructive(Text("KEY_DELETE_YARN")){
+        //                        deleteYarnInfo(yarnInfo: yarnInfo)
+        //                    },
+        //                        .cancel()
+        //                ]
+        //            )
+        //        }
     }
     private func archiveYarnInfo(yarnInfo: YarnInfo) {
         withAnimation{
@@ -254,7 +281,7 @@ struct YarnsDetailLabelInfoView: View {
                         modelContext.delete(detail)
                     }
                 }
-                try? modelContext.save()
+                //                try? modelContext.save()
                 modelContext.delete(stock)
             }
         }
@@ -263,15 +290,16 @@ struct YarnsDetailLabelInfoView: View {
                 modelContext.delete(swatch)
             }
         }
-        try? modelContext.save()
+        //        try? modelContext.save()
         modelContext.delete(yarnInfo)
         try? modelContext.save()
         // 前の画面に戻る
         self.presentation.wrappedValue.dismiss()
     }
-
+    
 }
 
 #Preview {
-    YarnsDetailLabelInfoView(yarnInfo: .init())
+    YarnsDetailLabelInfoView()
+        .environment(YarnInfo(name: "sampleYarn"))
 }

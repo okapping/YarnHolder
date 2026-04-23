@@ -12,115 +12,103 @@ import Flow
 
 struct YarnsDetailView: View {
     @Environment(\.modelContext) private var modelContext
-//    @AppStorage("defaultYarnInfoTab") var defaultYarnInfoTab = 0
+    @AppStorage("yarnInfoPickerEdge") var yarnInfoPickerEdge = 0
     
-//    var yarnInfo: YarnInfo
-    var yarnInfo: YarnInfo
-//    @State var yarnInfo: YarnInfo
-//    @State var inputYarnStock: InputYarnStock = .init()
+    @Environment(YarnInfo.self) var yarnInfo
+    
     @State var inputSwatch: InputSwatch = .init()
     @State var editYarnStock: YarnStock? = nil
-
+    
     // edit yarn
     @State private var inputYarnInfo: InputYarnInfo = .init()
     @State private var inputYarnMaterials: [InputYarnMaterial] = []
-//    @State private var inputYarnStocks: [InputYarnStock] = []
+    //    @State private var inputYarnStocks: [InputYarnStock] = []
     @State private var showYarnEditSheet = false
     @State private var yarnsEditViewComplete = false
-
+    
     // Laundry Symbol
     @State private var showPopoverId = 0
     @State private var showPopoverFlg = false
-
-//    // delete yarn
-//    @State private var showYarnDeleteSheet = false
-//    @Environment(\.presentationMode) var presentation
-
+    
     @State var selectedTab: Int = 0
+    
+    @Namespace private var namespace
+    
+    private func pickerEdge() -> VerticalEdge {
+        switch yarnInfoPickerEdge{
+        case 0:
+            return .top
+        case 1:
+            return .bottom
+        default:
+            return .top
+        }
+    }
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-//                HStack(spacing: 0) {
-//                    UpperTabView(selectedTab: $selectedTab, title: "KEY_BASIC_INFO", index: 1)
-//                    UpperTabView(selectedTab: $selectedTab, title: "KEY_ADDITIONAL_INFO", index: 2)
-//                    //                UpperTabView(selectedTab: $selectedTab, title: "その他", index: 3)
-//                }
-//                .frame(height: 40)
-                Picker("", selection: $selectedTab) {
-                    Text("KEY_LABEL_INFO").tag(0)
-                    Text("KEY_ADDITIONAL_INFO").tag(1)
-                }
-                .pickerStyle(SegmentedPickerStyle())
-//                .background(yarnInfo.symbolColor.opacity(0.25))
-                .cornerRadius(8)
-//                .padding()
-                .padding(.horizontal)
-                .padding(.bottom)
-                .background(.bar)
-                TabView(selection: $selectedTab) {
-                    // 基本情報
-                    YarnsDetailLabelInfoView(yarnInfo: yarnInfo)
-                        .tag(0)
-                    // 追加情報
-                    YarnsDetailAdditionalInfoView(yarnInfo: yarnInfo)
-                        .tag(1)
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .ignoresSafeArea()
-                .animation(.easeIn, value: selectedTab)
-//            }
+            switch selectedTab{
+            case 0:
+                YarnsDetailLabelInfoView()
+                    .animation(.default, value: yarnInfoPickerEdge)
+            case 1:
+                YarnsDetailAdditionalInfoView()
+                    .animation(.default, value: yarnInfoPickerEdge)
+            case 2:
+                YarnsDetailGalleryView()
+                    .animation(.default, value: yarnInfoPickerEdge)
+            default:
+                Text("Error")
+                
             }
-
         }
-//        .tint(yarnInfo.symbolColor)
-//        }
         .toolbarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
-//        .safeAreaInset(edge: .top) {
-//            Picker("", selection: $selectedTab) {
-//                Text("KEY_LABEL_INFO").tag(0)
-//                Text("KEY_ADDITIONAL_INFO").tag(1)
-//            }
-//            .padding(.horizontal)
-//            .padding(.bottom)
-//            .pickerStyle(.segmented)
-//            .background(.bar) // Thanks @BenzyKneez
-//        }
+        .modifier{ content in
+            if #available(iOS 26.0, *) {
+                content.safeAreaBar(edge: pickerEdge(), spacing: 8) {
+                    Picker("", selection: $selectedTab.animation()) {
+                        Text("KEY_LABEL_INFO").tag(0)
+                        Text("KEY_ADDITIONAL_INFO").tag(1)
+                        Text("KEY_GALLERY").tag(2)
+                    }
+                    .padding()
+                    .pickerStyle(.segmented)
+                    .background(.clear)
+                    .animation(.default, value: yarnInfoPickerEdge)
+                    .matchedGeometryEffect(id: "pickerEdge", in: namespace)
+                }
+            } else {
+                content
+                    .safeAreaInset(edge: pickerEdge()) {
+                        Picker("", selection: $selectedTab.animation()) {
+                            Text("KEY_LABEL_INFO").tag(0)
+                            Text("KEY_ADDITIONAL_INFO").tag(1)
+                            Text("KEY_GALLERY").tag(2)
+                        }
+                        .padding()
+                        .pickerStyle(.segmented)
+                        .background(.bar)
+                        .animation(.default, value: yarnInfoPickerEdge)
+                    }
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 HStack() {
-//                    createImageView(for: getYarnSymbol(by:yarnInfo.symbolId))
-//                        .foregroundColor(yarnInfo.symbolColor)
-//                        .font(.subheadline)
                     Text(yarnInfo.name)
                         .fontWeight(.bold)
-//                        .animation(.default, value: yarnInfo.archiveFlg)
                     if yarnInfo.archiveFlg {
                         Image(systemName: "archivebox.fill")
-//                            .foregroundColor(yarnInfo.symbolColor)
                             .font(.subheadline)
-//                            .transition(.symbolEffect(.disappear))
                             .foregroundStyle(.cGreen)
                     }
                 }
                 .geometryGroup()
-//                .animation(.default, value: yarnInfo.archiveFlg)
-//                .animation(.smooth, value: yarnInfo.archiveFlg)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 // 編集ボタン
                 Menu {
-//                    Menu {
-//                        Picker(selection: $defaultYarnInfoTab){
-//                            Label("KEY_LABEL_INFO", systemImage: "tag.fill").tag(0)
-//                            Label("KEY_ADDITIONAL_INFO", systemImage: "sparkles.square.filled.on.square").tag(1)
-//                        } label: {
-//                            Label("KEY_DEFAULT_TAB", systemImage: "square.stack.3d.down.forward.fill")
-//                        }
-//                    } label: {
-//                        Label("KEY_DEFAULT_TAB", systemImage: "square.stack.3d.down.forward.fill")
-//                    }
                     Button {
                         inputYarnInfo = InputYarnInfo.init(yarnInfo: yarnInfo)
                         if let wrappedMaterials = yarnInfo.materials{
@@ -139,6 +127,19 @@ struct YarnsDetailView: View {
                     } label: {
                         Label("KEY_EDIT_LABEL_INFO", systemImage: "pencil")
                     }
+                    Divider()
+                    Menu {
+                        Picker(selection: $yarnInfoPickerEdge){
+                            Label("KEY_TOP", systemImage: "arrow.up.to.line").tag(0)
+                            Label("KEY_BOTTOM", systemImage: "arrow.down.to.line").tag(1)
+                        } label: {
+                            Label("KEY_DEFAULT_TAB", systemImage: "rectangle.expand.vertical")
+                        }
+                    } label: {
+                        Label("KEY_TAB_EDGE", systemImage: "rectangle.expand.vertical")
+                        Text(yarnInfoPickerEdge == 0 ? "KEY_TOP" : "KEY_BOTTOM")
+                    }
+                    Divider()
                     Button {
                         withAnimation{
                             yarnInfo.archiveFlg.toggle()
@@ -150,7 +151,6 @@ struct YarnsDetailView: View {
                 } label: {
                     Label("KEY_SELECTION", systemImage: "ellipsis.circle")
                 }
-//                .tint(yarnInfo.symbolColor)
             }
             
         }
@@ -162,16 +162,13 @@ struct YarnsDetailView: View {
             YarnsEditView(
                 inputYarnInfo: $inputYarnInfo,
                 inputYarnMaterials: $inputYarnMaterials,
-//                inputYarnStocks: $inputYarnStocks,
+                //                inputYarnStocks: $inputYarnStocks,
                 inputComplete: $yarnsEditViewComplete,
                 isEntry: false
             )
         })
-        .onAppear{
-//            selectedTab = defaultYarnInfoTab
-        }
     }
-
+    
     private func updateYarnInfo(yarnInfo: YarnInfo) {
         defer {
             inputYarnInfo = .init()
@@ -196,8 +193,6 @@ struct YarnsDetailView: View {
             yarnInfo.folder = inputYarnInfo.folder
             yarnInfo.laundrySymbols = inputYarnInfo.laundrySymbols
             yarnInfo.images = inputYarnInfo.images
-//            yarnInfo.symbolId = inputYarnInfo.symbolId
-//            yarnInfo.symbolColorName = inputYarnInfo.symbolColorName
             // 素材情報の削除
             if let wrappedMaterials = yarnInfo.materials{
                 for material in wrappedMaterials {
@@ -212,17 +207,17 @@ struct YarnsDetailView: View {
                     orderIndex: index,
                     materialId: yarnMaterial.materialId,
                     percentage: percentage,
-//                    createdAt: Date()
                 )
                 modelContext.insert(newYarnMaterial)
             }
-
+            
             try? modelContext.save()
         }
     }
 }
 #Preview {
-//    YarnsDetailView(yarnInfo: .constant(YarnInfo(name: "テスト毛糸", memo: "メモメモ", createdAt: Date())))
-//    YarnsDetailView(yarnInfo: YarnInfo(name: "テスト毛糸", memo: "メモメモ", createdAt: Date()))
-//        .modelContainer(for: YarnInfo.self, inMemory: true)
+    //    YarnsDetailView(yarnInfo: .constant(YarnInfo(name: "テスト毛糸", memo: "メモメモ", createdAt: Date())))
+    YarnsDetailView()
+        .environment(YarnInfo(name: "テスト毛糸", memo: "メモメモ"))
+    //        .modelContainer(for: YarnInfo.self, inMemory: true)
 }

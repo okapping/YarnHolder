@@ -9,12 +9,12 @@ import SwiftUI
 import SwiftData
 
 enum StocksSortOrder: String, CaseIterable {
-//    case brightnessAsc  // 明度昇順
-//    case brightnessDesc // 明度降順
+    //    case brightnessAsc  // 明度昇順
+    //    case brightnessDesc // 明度降順
     case hue        // 色相順
-//    case saturationAsc  // 彩度昇順
-//    case saturationDesc // 彩度降順
-
+    //    case saturationAsc  // 彩度昇順
+    //    case saturationDesc // 彩度降順
+    
     case lightness // 輝度順
     
     var value: String {
@@ -48,9 +48,9 @@ struct StocksListView: View {
     @AppStorage("stocksListOrderDirection") var stocksListOrderDirection: OrderDirection = .asc
     @AppStorage("weightUnit") var weightUnit = "g"
     @AppStorage("lengthUnit") var lengthUnit = "m"
-
+    
     @Query var stocks: [YarnStock]
-
+    
     public func sortedYarns(/*from stocks: [YarnStock]*/) -> [YarnStock] {
         
         switch stocksListOrder {
@@ -70,13 +70,14 @@ struct StocksListView: View {
                 return stocks.sorted(by: {$0.sampleColor.color.lightness < $1.sampleColor.color.lightness})
             }
         }
-//        return stocks
+        //        return stocks
     }
     var body: some View {
         List(){
             ForEach(sortedYarns()){ stock in
                 NavigationLink{
-                    StocksDetailView(stock: stock)
+                    StocksDetailView()
+                        .environment(stock)
                 } label: {
                     HStack {
                         Rectangle()
@@ -143,23 +144,23 @@ struct StocksListView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-//                    .contextMenu(menuItems: {
-//                        Button {
-//                            feedbackForAddStock.toggle()
-//                            duplicateYarnStock(stock: yarnStock)
-//                        } label: {
-//                            Label("KEY_DUPLICATE", systemImage: "document.on.document")
-//                        }
-//                        Divider()
-//                        Button(role: .destructive) {
-//                            deleteYarnStock(yarnStock: yarnStock)
-//                        } label: {
-//                            Label("KEY_DELETE", systemImage: "trash")
-//                        }
-//                        .tint(.red)
-//                    })
+                    //                    .contextMenu(menuItems: {
+                    //                        Button {
+                    //                            feedbackForAddStock.toggle()
+                    //                            duplicateYarnStock(stock: yarnStock)
+                    //                        } label: {
+                    //                            Label("KEY_DUPLICATE", systemImage: "document.on.document")
+                    //                        }
+                    //                        Divider()
+                    //                        Button(role: .destructive) {
+                    //                            deleteYarnStock(yarnStock: yarnStock)
+                    //                        } label: {
+                    //                            Label("KEY_DELETE", systemImage: "trash")
+                    //                        }
+                    //                        .tint(.red)
+                    //                    })
                 }
-
+                
             }
         }
         .toolbar {
@@ -195,17 +196,17 @@ struct StocksListView: View {
                 }
             }
         }
-
+        
         .listStyle(.sidebar)
         .navigationTitle("KEY_ALL_STASH")
         .toolbarTitleDisplayMode(.large)
-
-//        Text("StocksListView")
+        
+        //        Text("StocksListView")
     }
 }
 
 
-#Preview {
-    StocksListView()
-        // .modelContainer(previewYarn)
-}
+//#Preview {
+//    StocksListView()
+//         .modelContainer(previewYarn)
+//}

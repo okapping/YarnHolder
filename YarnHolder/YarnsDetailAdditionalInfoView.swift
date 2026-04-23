@@ -18,20 +18,13 @@ struct YarnsDetailAdditionalInfoView: View {
     @AppStorage("appColorTheme") var appColorTheme = 10
     @AppStorage("weightUnit") var weightUnit = "g"
     @AppStorage("lengthUnit") var lengthUnit = "m"
-
-    var yarnInfo: YarnInfo
+    
+    //    var yarnInfo: YarnInfo
+    @Environment(YarnInfo.self) var yarnInfo
     
     @State var inputYarnStock: InputYarnStock = .init()
     @State var inputYarnStockDetails: [InputYarnStockDetail] = []
     @State var inputSwatch: InputSwatch = .init()
-//    @State var editYarnStock: YarnStock? = nil
-    
-    // edit yarn
-//    @State private var inputYarnInfo: InputYarnInfo = .init()
-//    @State private var inputYarnMaterials: [InputYarnMaterial] = []
-    //    @State private var inputYarnStocks: [InputYarnStock] = []
-//    @State private var showYarnEditSheet = false
-//    @State private var yarnsEditViewComplete = false
     
     // add stock
     @State private var showStockAddSheet = false
@@ -55,14 +48,24 @@ struct YarnsDetailAdditionalInfoView: View {
     // ImageView
     @State private var showFullImage = false
     @State private var showImages: [showImageContainer] = []
+    @Namespace private var namespace
+    @State private var trackingId = 0
+    
+    @State private var showImagePreviewImage: Data?
+    @State private var showImagePreviewSheet: Bool = false
+    @State private var showImagePreviewSourceId: String = ""
+    
+    @State private var showMemoEditSheet = false
+    @State private var memoEditViewComplete = false
+    @State private var inputMemo = ""
     
     // feedback用
     @State private var feedbackForAddStock: Bool = false
     @State private var feedbackForAddSwatch: Bool = false
-//    swatch.needleName
+    //    swatch.needleName
     func dispSwatchNeedleSizeLabel(from swatch: Swatch) -> String {
         let code = locale.language.languageCode?.identifier ?? ""
-//        if code == "ja" {
+        //        if code == "ja" {
         if swatch.needleType == 0 {
             let size = getKnittingNeedlesSize(by: swatch.needleSize)
             return code == "ja" ? size.dispSizeJp : size.dispSizeDefault
@@ -72,14 +75,35 @@ struct YarnsDetailAdditionalInfoView: View {
         } else {
             return "\(swatch.needleSize)"
         }
-//        } else {
-//            return "\(needle.mmSize)mm"
-//        }
+        //        } else {
+        //            return "\(needle.mmSize)mm"
+        //        }
     }
-
+    
     var body: some View {
         // *******************************************
         List {
+            // *******************************************
+            // メモ
+            Section(
+                header:
+                    HStack {
+                        Image(systemName: "text.page")
+                            .font(.title3)
+                        ListTitleView(title: "KEY_MEMO")
+                        Spacer()
+                        Button{
+                            inputMemo = yarnInfo.memo
+                            showMemoEditSheet = true
+                        } label: {
+                            Label("KEY_EDIT", systemImage: "square.and.pencil")
+                        }
+                        .listHeaderButtonStyle()
+                        
+                    }
+            ) {
+                Text(yarnInfo.memo)
+            }
             // *******************************************
             // タグ
             Section(
@@ -93,16 +117,10 @@ struct YarnsDetailAdditionalInfoView: View {
                             inputTags = yarnInfo.tags ?? []
                             showTagSelectSheet = true
                         } label: {
-//                            ListTitleButtonView(title: "KEY_EDIT", symbol: "square.and.pencil", color: yarnInfo.symbolColor)
+                            //                            ListTitleButtonView(title: "KEY_EDIT", symbol: "square.and.pencil", color: yarnInfo.symbolColor)
                             Label("KEY_EDIT", systemImage: "square.and.pencil")
-                                .fontWeight(.bold)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .buttonBorderShape(.capsule)
-//                        .tint(yarnInfo.symbolColor)
-//                        .tint(Color(getColorTheme(by: appColorTheme).sysName))
-
+                        .listHeaderButtonStyle()
                     }
             ){
                 HStack {
@@ -132,17 +150,10 @@ struct YarnsDetailAdditionalInfoView: View {
                         Button{
                             feedbackForAddStock.toggle()
                             addYarnStock()
-//                            showStockAddSheet = true
                         } label: {
-//                            ListTitleButtonView(title: "KEY_ADD")
                             Label("KEY_ADD", systemImage: "plus")
-                                .fontWeight(.bold)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .buttonBorderShape(.capsule)
-//                        .tint(yarnInfo.symbolColor)
-//                        .tint(Color(getColorTheme(by: appColorTheme).sysName))
+                        .listHeaderButtonStyle()
                         .sensoryFeedback(.success, trigger: feedbackForAddStock)
                     }
             ) {
@@ -152,7 +163,8 @@ struct YarnsDetailAdditionalInfoView: View {
                     }
                     ForEach(wrappedStocks.sorted(by: { $0.orderIndex < $1.orderIndex })) {stock in
                         NavigationLink {
-                            StocksDetailView(stock: stock)
+                            StocksDetailView()
+                                .environment(stock)
                         } label: {
                             HStack {
                                 Rectangle()
@@ -217,7 +229,7 @@ struct YarnsDetailAdditionalInfoView: View {
                         }
                     }
                     .onMove(perform: moveYarnStock)
-
+                    
                 }
             }
             // *******************************************
@@ -233,13 +245,9 @@ struct YarnsDetailAdditionalInfoView: View {
                             feedbackForAddSwatch.toggle()
                             showSwatchAddSheet = true
                         } label: {
-//                            ListTitleButtonView(title: "KEY_ADD")
                             Label("KEY_ADD", systemImage: "plus")
-                                .fontWeight(.bold)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .buttonBorderShape(.capsule)
+                        .listHeaderButtonStyle()
                         .sensoryFeedback(.success, trigger: feedbackForAddSwatch)
                     }
             ){
@@ -250,25 +258,20 @@ struct YarnsDetailAdditionalInfoView: View {
                     ForEach(wrappedSwatches.sorted(by: { $0.orderIndex < $1.orderIndex })) { swatch in
                         HStack() {
                             if let imageData = swatch.image {
-                                if let uiImage = UIImage(data: imageData) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 80, height: 80)
-                                    //                                    .frame(width: 48, height: 48)
-                                        .clipped()
-                                        .clipShape(RoundedRectangle(cornerRadius: 10)) // 角を丸くした四角形
-                                        .onTapGesture {
-                                            let image = showImageContainer(uiImage: uiImage)
-                                            showImages.append(image)
-                                            showFullImage = true
-                                        }
-                                    //                                    .overlay(
-                                    //                                        RoundedRectangle(cornerRadius: 10) // 縁を追加
-                                    //                                            .stroke(Color.secondary, lineWidth: 2) // 縁の色を設定
-                                    //                                    )
-                                    
-                                }
+                                ResizedImage(data: imageData)
+                                    .frame(width: 80, height: 80)
+                                    .clipped()
+                                    .clipShape(.rect(cornerRadius: 10)) // 角を丸くした四角形
+                                    .onTapGesture {
+                                        showImagePreviewSourceId = "\(swatch.hashValue)"
+                                        showImagePreviewImage = imageData
+                                        showImagePreviewSheet = true
+                                        //                                        let image = showImageContainer(uiImage: uiImage)
+                                        //                                        showImages.append(image)
+                                        //                                        trackingId = swatch.orderIndex
+                                        //                                        showFullImage = true
+                                    }
+                                    .matchedTransitionSource(id: "\(swatch.hashValue)", in: namespace)
                             } else {
                                 ZStack {
                                     Rectangle()
@@ -308,13 +311,6 @@ struct YarnsDetailAdditionalInfoView: View {
                         .contextMenu(menuItems: {
                             Button {
                                 inputSwatch = .init(swatch: swatch)
-                                //                            inputSwatch.image = swatch.image
-                                //                            inputSwatch.needleType = swatch.needleType
-                                //                            inputSwatch.needleSize = swatch.needleSize
-                                //                            inputSwatch.stitches = swatch.stitches
-                                //                            inputSwatch.rows = swatch.rows
-                                //                            inputSwatch.weight = swatch.weight
-                                
                                 editSwatchIndex = swatch.orderIndex
                                 showSwatchEditSheet = true
                             } label: {
@@ -330,43 +326,24 @@ struct YarnsDetailAdditionalInfoView: View {
                         })
                     }
                     .onMove(perform: moveSwatch)
-
+                    
                 }
             }
             
         }
-        // 在庫新規作成シート
-//        .sheet(isPresented: $showStockAddSheet, onDismiss: {
-//            addYarnStock()
-//        }, content: {
-//            StocksEditView(
-//                yarnInfo: yarnInfo,
-//                inputYarnStock: $inputYarnStock,
-//                inputYarnStockDetails: $inputYarnStockDetails,
-//                inputComplete: $stockEditViewComplete,
-//                isEntry: true
-//            )
-//        })
-        // 在庫編集シート
-//        .sheet(isPresented: $showStockEditSheet, onDismiss: {
-//            if let yarnStock = yarnInfo.stocks.first(where: { $0.orderIndex == editYarnStockIndex }) {
-//                updateYarnStock(yarnStock: yarnStock)
-//            }
-//        }, content: {
-//            StocksEditView(
-//                yarnInfo: yarnInfo,
-//                inputYarnStock: $inputYarnStock,
-//                inputYarnStockDetails: $inputYarnStockDetails,
-//                inputComplete: $stockEditViewComplete,
-//                isEntry: false
-//            )
-//        })
+        // メモ編集シート
+        .sheet(isPresented: $showMemoEditSheet, onDismiss: {
+            editMemo()
+        }, content: {
+            NavigationStack {
+                MemoEditView(
+                    inputMemo: $inputMemo,
+                    inputComplete: $memoEditViewComplete
+                )
+            }
+        })
         // タグ編集シート
         .sheet(isPresented: $showTagSelectSheet, onDismiss: {
-            //            if let yarnStock = yarnInfo.stocks.first(where: { $0.orderIndex == editYarnStockIndex }) {
-            //                updateYarnStock(yarnStock: yarnStock)
-            //            }
-            //            editTags(yarnInfo: yarnInfo)
             editTags()
         }, content: {
             NavigationStack {
@@ -375,9 +352,6 @@ struct YarnsDetailAdditionalInfoView: View {
                     inputComplete: $tagSelectViewComplete
                 )
             }
-            //            TagsEditView(
-            //                selectTags: $yarnInfo.tags
-            //            )
         })
         // スワッチ新規作成シート
         .sheet(isPresented: $showSwatchAddSheet, onDismiss: {
@@ -406,9 +380,13 @@ struct YarnsDetailAdditionalInfoView: View {
         .fullScreenCover(isPresented: $showFullImage, onDismiss: {
             showImages = []
         }, content: {
-            FullImagesView(images: $showImages, selectIndex: .constant(0))
+            FullImagesView(images: $showImages, selectIndex: .constant(0), namespace: namespace)
+                .navigationTransition(.zoom(sourceID: trackingId, in: namespace))
         })
-
+        .fullScreenCover(isPresented:$showImagePreviewSheet){
+            ImagePreviewView(imageData: $showImagePreviewImage, sourceId: $showImagePreviewSourceId, namespace: namespace)
+        }
+        
     }
     private func addYarnStock() {
         withAnimation{
@@ -424,66 +402,6 @@ struct YarnsDetailAdditionalInfoView: View {
             try? modelContext.save()
         }
     }
-//    private func addYarnStock() {
-//        defer {
-//            inputYarnStock = .init()
-//            stockEditViewComplete = false
-//            inputYarnStockDetails = []
-//        }
-//        if !stockEditViewComplete {
-//            return
-//        }
-//        
-//        withAnimation {
-//            let newYarnStock = YarnStock(yarnInfo: yarnInfo, input: inputYarnStock)
-//            modelContext.insert(newYarnStock)
-//            // details
-//            for (index, detail) in inputYarnStockDetails.enumerated() {
-//                print("newYarnStockDetail weight = \(String(detail.weight))")
-//                print("newYarnStockDetail status name = \(detail.status.name)")
-//                let newYarnStockDetail = YarnStockDetail(yarnStock: newYarnStock, input: detail, index: index)
-//                
-//                modelContext.insert(newYarnStockDetail)
-//            }
-//            
-//            // orderIndexの更新
-//            renumberStocksIndex(yarnInfo: yarnInfo)
-//
-//            try? modelContext.save()
-//        }
-//    }
-//    private func updateYarnStock(yarnStock: YarnStock) {
-//        defer {
-//            inputYarnStock = .init()
-//            stockEditViewComplete = false
-//            inputYarnStockDetails = []
-//        }
-//        if !stockEditViewComplete {
-//            return
-//        }
-//        withAnimation {
-//            let colorComponents = ColorComponents.fromColor(inputYarnStock.sampleColor)
-//            yarnStock.images = inputYarnStock.images
-//            yarnStock.sampleColor = colorComponents
-//            yarnStock.colorCode = inputYarnStock.colorCode
-//            yarnStock.lotNumber = inputYarnStock.lotNumber
-//            yarnStock.memo = inputYarnStock.memo
-//            try? modelContext.save()
-//            // orderIndexの更新
-//            renumberStocksIndex(yarnInfo: yarnInfo)
-//            // details
-//            // 一度全削除してから、再作成・・・？でいいのか、、、？
-//            for detail in yarnStock.details {
-//                modelContext.delete(detail)
-//            }
-//            for (index, detail) in inputYarnStockDetails.enumerated() {
-//                let newYarnStockDetail = YarnStockDetail(yarnStock: yarnStock, input: detail, index: index)
-//                modelContext.insert(newYarnStockDetail)
-//            }
-//            try? modelContext.save()
-//            
-//        }
-//    }
     private func moveYarnStock(from source: IndexSet, to destination: Int) {
         if let wrappedStocks = yarnInfo.stocks {
             var updatedStocks = wrappedStocks.sorted(by: { $0.orderIndex < $1.orderIndex })
@@ -514,6 +432,19 @@ struct YarnsDetailAdditionalInfoView: View {
         }
     }
     //yarnInfo: YarnInfo
+    private func editMemo() {
+        defer {
+            memoEditViewComplete = false
+        }
+        if !memoEditViewComplete {
+            return
+        }
+        withAnimation {
+            yarnInfo.memo = inputMemo
+            try? modelContext.save()
+        }
+        
+    }
     private func editTags() {
         defer {
             inputTags = []
@@ -567,7 +498,7 @@ struct YarnsDetailAdditionalInfoView: View {
                 stitches: inputSwatch.stitches ?? 0,
                 rows: inputSwatch.rows ?? 0,
                 weight: inputSwatch.weight ?? 0
-
+                
             )
             modelContext.insert(newSwatch)
             
@@ -609,7 +540,7 @@ struct YarnsDetailAdditionalInfoView: View {
             }
         }
     }
-
+    
     private func deleteSwatch(swatch: Swatch) {
         withAnimation {
             modelContext.delete(swatch)
@@ -624,7 +555,8 @@ struct YarnsDetailAdditionalInfoView: View {
 
 #Preview{
     @Previewable @State var yarnInfo: YarnInfo = YarnInfo(name: "テスト毛糸", length: 60, weight: 50)
-
-    YarnsDetailAdditionalInfoView(yarnInfo: yarnInfo)
-        // .modelContainer(previewYarn)
+    
+    YarnsDetailAdditionalInfoView()
+        .environment(yarnInfo)
+    // .modelContainer(previewYarn)
 }

@@ -11,42 +11,172 @@ import PhotosUI
 
 struct StocksDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.locale) var locale
+    @Environment(YarnStock.self) var stock
+    
     @Query var stockStatuses: [YarnStockStatus]
     
     @AppStorage("weightUnit") var weightUnit = "g"
     @AppStorage("lengthUnit") var lengthUnit = "m"
-
-    @State var stock: YarnStock
+    
+    //    @State var stock: YarnStock
     
     @State private var tmpColor: Color = .blue
     
     // 画像拡大用
-    @State private var showFullImage = false
-    @State private var showImages: [showImageContainer] = []
-    @State private var showImageIndex: Int = 0
-
+    //    @State private var showFullImage = false
+    //    @State private var showImages: [showImageContainer] = []
+    //    @State private var showImageIndex: Int = 0
+    
+    @State private var ipModel:ImagePreviewModel = .init()
+    @State private var stockImageDatas: [ImageData] = []
+    @Namespace private var namespace
+    
     @FocusState private var focus: Bool
-        
+    
     @State private var showImagesSection: Bool = true
+    @State private var showInfoSection: Bool = false
     
     func defaultStatus() -> YarnStockStatus {
         return stockStatuses.first(where: { $0.isDefault })!
     }
     
-//    @State private var isAnimating: Bool = false
+    func dispNeedleSizeLabel(from needle: KnittingNeedlesSize) -> String {
+        let code = locale.language.languageCode?.identifier ?? ""
+        if code == "ja" {
+            return needle.dispSizeJp
+        } else {
+            return "\(needle.mmSize)mm"
+        }
+    }
+    func dispNeedleSizeLabel(from needle: CrochetHookSize) -> String {
+        let code = locale.language.languageCode?.identifier ?? ""
+        if code == "ja" {
+            return needle.dispSizeJp
+        } else {
+            return "\(needle.mmSize)mm"
+        }
+    }
+    
+    //    @State private var isAnimating: Bool = false
     
     // 写真関連
     @State var selectedPhotos: [PhotosPickerItem] = []
     @State var showPhotoSheet: Bool = false
     @State var getUImage: UIImage?
     @State var showCameraSheet: Bool = false
-
+    
     
     // frrdback用
     @State private var feedbackForAddStockDetail: Bool = false
-
+    
+    init(){
+        //        self._stock = State(initialValue: stock)
+        //        self._stockImageDatas = State(initialValue: stock.images.map { ImageData(data: $0) })
+    }
+    
     var body: some View {
         List() {
+            // 基本毛糸情報
+            Section(
+                isExpanded: $showInfoSection
+            ){
+                VStack{
+                    // 素材
+                    if let wrappedMaterials = stock.yarnInfo?.materials{
+                        if wrappedMaterials.isEmpty {
+                            Text("KEY_NOT_REGISTERED")
+                        }
+                        ForEach(wrappedMaterials.sorted(by: { $0.orderIndex < $1.orderIndex })) {yarnMaterial in
+                            HStack {
+                                //                        Text("\(yarnMaterial.orderIndex)")
+                                let material = getYarnMaterial(by: yarnMaterial.materialId)
+                                let name = LocalizedStringKey(material.name)
+                                Text(name)
+                                Spacer()
+                                Text("\(yarnMaterial.percentage)%")
+                            }
+                            
+                        }
+                    }
+                    Divider()
+                    // 標準ゲージ
+                    HStack{
+                        Text("KEY_STANDARD_GAUGE")
+                        Spacer()
+                        if let stitches = stock.yarnInfo?.standardGaugeStitches {
+                            Text("KEY_STITCHES\(stitches.roundedString())")
+                        }
+                        if let rows = stock.yarnInfo?.standardGaugeRows {
+                            Text("KEY_ROWS\(rows.roundedString())")
+                        }
+                    }
+                    // 使用棒針
+                    HStack {
+                        Text("KEY_USE_CIRCULAR_NEEDLE")
+                        Spacer()
+                        if let from = stock.yarnInfo?.useKnittingNeedlesFrom{
+                            let needle = getKnittingNeedlesSize(by: from)
+                            Text(dispNeedleSizeLabel(from: needle))
+                        }
+                        if stock.yarnInfo?.useKnittingNeedlesFrom != nil || stock.yarnInfo?.useKnittingNeedlesTo != nil{
+                            Image(systemName: "alternatingcurrent")
+                        }
+                        if let from = stock.yarnInfo?.useKnittingNeedlesTo{
+                            let needle = getKnittingNeedlesSize(by: from)
+                            Text(dispNeedleSizeLabel(from: needle))
+                        }
+                    }
+                    // 使用かぎ針
+                    HStack {
+                        Text("KEY_USE_HOOK")
+                        Spacer()
+                        if let from = stock.yarnInfo?.useCrochetHookFrom{
+                            let needle = getCrochetHookSize(by: from)
+                            Text(dispNeedleSizeLabel(from: needle))
+                        }
+                        if stock.yarnInfo?.useCrochetHookFrom != nil || stock.yarnInfo?.useCrochetHookTo != nil{
+                            Image(systemName: "alternatingcurrent")
+                        }
+                        if let from = stock.yarnInfo?.useCrochetHookTo{
+                            let needle = getCrochetHookSize(by: from)
+                            Text(dispNeedleSizeLabel(from: needle))
+                        }
+                    }
+                    // 重さ
+                    HStack {
+                        Text("KEY_WEIGHT")
+                        Spacer()
+                        if let weight = stock.yarnInfo?.weight{
+                            Text("\(String(weight)) \(weightUnit)")
+                        }
+                    }
+                    // 長さ
+                    HStack {
+                        Text("KEY_LENGTH")
+                        Spacer()
+                        if let length = stock.yarnInfo?.length{
+                            Text("\(String(length)) \(lengthUnit)")
+                        }
+                    }
+                    
+                }
+                
+            } header: {
+                HStack {
+                    ListTitleView(title: "KEY_LABEL_INFO")
+                    Spacer()
+                    Image(systemName: "chevron.forward")
+                        .rotationEffect(Angle(degrees: showInfoSection ? 90 : 0))
+                }
+                .contentShape(.rect)
+                .onTapGesture{
+                    withAnimation{
+                        showInfoSection.toggle()
+                    }
+                }
+                
+            }
             // 画像
             Section(
                 isExpanded: $showImagesSection
@@ -54,44 +184,36 @@ struct StocksDetailView: View {
             ) {
                 if stock.images.isEmpty {
                 } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
+                    ScrollView(.horizontal, showsIndicators: true) {
                         HStack {
-                            ForEach(Array(stock.images.enumerated()), id: \.element) { i, image in
-                                if let uiImage = UIImage(data: image) {
-                                    Menu{
-                                        Button(role: .destructive) {
+                            ForEach(Array(stockImageDatas.enumerated()), id: \.element.id) { i, image in
+                                Menu{
+                                    Button(role: .destructive) {
+                                        withAnimation{
+                                            stockImageDatas.remove(at: i)
                                             stock.images.remove(at: i)
                                             try? modelContext.save()
-                                        } label: {
-                                            Label("KEY_DELETE", systemImage: "trash")
                                         }
-                                        .tint(.red)
                                     } label: {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .scaledToFit()
-                                            .clipShape(RoundedRectangle(cornerRadius: 10)) // 角を丸くした四角形
-                                            .frame(height:150)
-                                    } primaryAction: {
-                                        for tmpImage in stock.images{
-                                            if let tmpUiImage = UIImage(data: tmpImage) {
-                                                let appendImage = showImageContainer(uiImage: tmpUiImage)
-                                                showImages.append(appendImage)
-                                            }
-                                        }
-                                        print("detail view cnt = \(showImages.count)")
-                                        showImageIndex = i
-                                        showFullImage = true
+                                        Label("KEY_DELETE", systemImage: "trash")
                                     }
+                                    .tint(.red)
+                                } label: {
+                                    ResizedImage(data: image.data)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10)) // 角を丸くした四角形
+                                        .frame(height:150)
+                                        .matchedGeometryEffect(id: "\(image.id)", in: namespace)
+                                        .matchedTransitionSource(id: "\(image.id)", in: namespace)
+                                        .buttonStyle(.plain)
+                                } primaryAction: {
+                                    ipModel.sourceId = "\(image.id)"
+                                    ipModel.image = image.data
+                                    ipModel.showSheet = true
                                 }
                             }
                         }
                     }
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
                 }
-                
-                
             } header: {
                 HStack {
                     ListTitleView(title: "KEY_IMAGE")
@@ -113,16 +235,21 @@ struct StocksDetailView: View {
                         Label("KEY_ADD", systemImage: "plus")
                             .fontWeight(.bold)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .buttonBorderShape(.capsule)
-
+                    .listHeaderButtonStyle()
+                    Image(systemName: "chevron.forward")
+                        .rotationEffect(Angle(degrees: showImagesSection ? 90 : 0))
                 }
+                .contentShape(.rect)
+                .onTapGesture{
+                    withAnimation{
+                        showImagesSection.toggle()
+                    }
+                }
+                
                 
             }
             // *********************
             Section(
-                //                    header: Text("KEY_BASIC_INFO")
             ) {
                 HStack {
                     Label("KEY_COLOR_SAMPLE", systemImage: "paintpalette")
@@ -143,22 +270,24 @@ struct StocksDetailView: View {
                         }
                 }
                 HStack {
-                    //                                let buttonPosition = geometry.frame(in: .global).minY
-                    //                                Text("\(Int(geometry.frame(in: .global).origin.y))")
                     Label("KEY_COLOR_CODE", systemImage: "swatchpalette")
                     Spacer()
-                    TextField("00", text: $stock.colorCode)
-                        .multilineTextAlignment(.trailing)
-                        .focused(self.$focus)
+                    TextField("00", text: Binding(
+                        get: { stock.colorCode },
+                        set: { stock.colorCode = $0 }
+                    ))
+                    .multilineTextAlignment(.trailing)
+                    .focused(self.$focus)
                 }
                 HStack {
-                    //                                let buttonPosition = geometry.frame(in: .global).minY
-                    //                                Text("\(buttonPosition)")
                     Label("KEY_LOT_NUMBER", systemImage: "numbers.rectangle")
                     Spacer()
-                    TextField("AB00", text: $stock.lotNumber)
-                        .multilineTextAlignment(.trailing)
-                        .focused(self.$focus)
+                    TextField("AB00", text: Binding(
+                        get: { stock.lotNumber },
+                        set: { stock.lotNumber = $0 }
+                    ))
+                    .multilineTextAlignment(.trailing)
+                    .focused(self.$focus)
                 }
                 
                 
@@ -188,7 +317,7 @@ struct StocksDetailView: View {
                         .contentTransition(.numericText(value: stock.totalWeight))
                 }
                 HStack{
-                    Label("KEY_TOTAL_LENGTH", systemImage: "arrow.left.and.right")
+                    Label("KEY_TOTAL_LENGTH", systemImage: "glowplug")
                     Spacer()
                     Text("\(String(format: "%.1f", stock.totalLength)) \(lengthUnit)")
                         .contentTransition(.numericText(value: stock.totalLength))
@@ -197,7 +326,7 @@ struct StocksDetailView: View {
             Section(
                 header:
                     HStack {
-                        ListTitleView(title: "KEY_DETAIL")
+                        ListTitleView(title: "KEY_STOCK_DETAIL")
                         Spacer()
                         Button{
                             feedbackForAddStockDetail.toggle()
@@ -206,22 +335,13 @@ struct StocksDetailView: View {
                                 modelContext.insert(newDetail)
                                 try? modelContext.save()
                             }
-//                            withAnimation {
-//                                stock.details.append(newDetail)
-//                                try? modelContext.save()
-//                            }
-                            
                         } label: {
                             Label("KEY_ADD", systemImage: "plus")
-                                .fontWeight(.bold)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .buttonBorderShape(.capsule)
-                        //                                .tint(inputYarnInfo.symbolColor)
+                        .listHeaderButtonStyle()
                         .sensoryFeedback(.success, trigger: feedbackForAddStockDetail)
                     }
-
+                
             ){
                 if let wrappedDetails = stock.details{
                     ForEach(wrappedDetails.sorted(by: { $0.orderIndex < $1.orderIndex })) { detail in
@@ -239,7 +359,7 @@ struct StocksDetailView: View {
                                             }
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                             HStack{
-                                                Image(systemName: "arrow.left.and.right")
+                                                Image(systemName: "glowplug")
                                                 Text("\(detail.length.roundedString()) \(lengthUnit)")
                                             }
                                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -270,7 +390,7 @@ struct StocksDetailView: View {
                             Button(role: .destructive) {
                                 withAnimation{
                                     modelContext.delete(detail)
-                                    try? modelContext.save()
+                                    //                                    try? modelContext.save()
                                     renumberStockDetail()
                                     try? modelContext.save()
                                 }
@@ -284,20 +404,50 @@ struct StocksDetailView: View {
             }
             // *********************
             Section() {
-                TextField("KEY_MEMO",
-                          text: $stock.memo,
-                          axis: .vertical
-                )
+                TextField("KEY_MEMO", text: Binding(
+                    get: { stock.memo },
+                    set: { stock.memo = $0 }
+                ), axis: .vertical)
                 .focused(self.$focus)
                 //                    .frame(minHeight: 80)
             }
-
+            
             // *********************
             // *********************
             // *********************
             
         }
-//        .listStyle(.sidebar)
+        .onAppear{
+            stockImageDatas = stock.images.map { ImageData(data: $0) }
+            tmpColor = stock.sampleColor.color
+        }
+        .onChange(of: stock){
+            stockImageDatas = stock.images.map { ImageData(data: $0) }
+            tmpColor = stock.sampleColor.color
+        }
+        // これをつけると、デフォルトでセクションの開閉ができるようになるが、
+        // ipadでの見た目がそっけなくなってしまうので、自前で実装する。
+        //        .listStyle(.sidebar)
+        .toolbarTitleDisplayMode(.inline)
+        //        .safeAreaInset(edge: .top) {
+        //            if showInfo {
+        //                TabView{
+        //                    List{
+        //                        Text("1")
+        //                        Text("1")
+        //                        Text("1")
+        //                    }
+        //                    List{
+        //                        Text("2")
+        //                        Text("2")
+        //                        Text("2")
+        //                    }
+        //                }
+        //                .tabViewStyle(.page)
+        //                .frame(width: .infinity, height: 200)
+        //
+        //            }
+        //        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 HStack {
@@ -309,33 +459,39 @@ struct StocksDetailView: View {
                         .fill(tmpColor)
                         .frame(width: 32, height: 32)
                         .cornerRadius(10)
-
+                    
                 }
             }
-
+            ToolbarItem(placement: .topBarTrailing) {
+                //                Button{
+                //                    withAnimation{
+                //                        showInfo.toggle()
+                //                    }
+                //                } label: {
+                //                    Image(systemName: showInfo ? "info.circle.fill" : "info.circle")
+                //                }
+            }
             ToolbarItem(placement: .keyboard){
                 HStack{
                     Spacer()
                     Button{
                         focus = false
                     }label: {
-//                        Image(systemName: "keyboard.chevron.compact.down")
+                        //                        Image(systemName: "keyboard.chevron.compact.down")
                         Text("KEY_DONE")
                     }
                 }
             }
             
         }
-
-        .onAppear {
-            tmpColor = stock.sampleColor.color
+        //        .fullScreenCover(isPresented: $showFullImage, onDismiss: {
+        //            showImages = []
+        //        }, content: {
+        //            FullImagesView(images: $showImages, selectIndex: $showImageIndex, namespace: namespace)
+        //        })
+        .fullScreenCover(isPresented:$ipModel.showSheet){
+            ImagePreviewView(imageData: $ipModel.image, sourceId: $ipModel.sourceId, namespace: namespace)
         }
-        .fullScreenCover(isPresented: $showFullImage, onDismiss: {
-            showImages = []
-        }, content: {
-            FullImagesView(images: $showImages, selectIndex: $showImageIndex)
-        })
-
         .photosPicker (
             isPresented: $showPhotoSheet,
             selection: $selectedPhotos,
@@ -360,18 +516,18 @@ struct StocksDetailView: View {
         }
         //画像を得た時
         .onChange(of: getUImage) {
-            if let uiImage = getUImage, let pngData = uiImage.pngData() {
-                stock.images.append(pngData)
+            if let uiImage = getUImage, let imageData = uiImage.jpegData(compressionQuality: 0.3) {
+                stock.images.append(imageData)
                 try? modelContext.save()
             }
         }
-
+        
     }
-//    public func deleteDetails(offsets: IndexSet) {
-//        var detail = stock.details
-//        stock.details.remove(atOffsets: offsets)
-//    }
-
+    //    public func deleteDetails(offsets: IndexSet) {
+    //        var detail = stock.details
+    //        stock.details.remove(atOffsets: offsets)
+    //    }
+    
     private func renumberStockDetail() {
         // orderIndexでソート
         if let wrappedDetails = stock.details{
@@ -380,7 +536,13 @@ struct StocksDetailView: View {
                 detail.orderIndex = index
             }
             try? modelContext.save()
-
+            
         }
     }
 }
+
+//#Preview {
+//    ContentView()
+//        .modelContainer(previewYarn)
+//}
+

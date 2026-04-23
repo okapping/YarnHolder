@@ -18,26 +18,34 @@ struct YarnStockStatusListView: View {
     @State private var inputStatusName = ""
     @State private var editStatus: YarnStockStatus? = nil
     @State private var deleteStatus: YarnStockStatus? = nil
-
+    
     @State private var showChangeDefaultAlert: Bool = false
     
-
+    @Namespace private var namespace
+    
     var body: some View {
         List() {
             ForEach(statuses.sorted(by: {$0.orderIndex < $1.orderIndex})) { status in
                 HStack {
-                    if status.isDefault {
-                        Image(systemName: "star.fill")
-                    }
                     Text(status.name)
+                    if status.isDefault {
+                        Spacer()
+                        Text("KEY_DEFAULT")
+                            .font(.caption.bold())
+                            .padding(8)
+                            .background(
+                                Capsule()
+                                    .fill(.gray.opacity(0.25))
+                            )
+                    }
                 }
+                .animation(.easeInOut, value: status)
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     // スワイプ＞削除
                     if !status.isDefault {
                         Button(role: .destructive) {
                             deleteStatus = status
                             showDeleteStatusAlert = true
-//                            deleteStatus(deleteStatus: status)
                         } label: {
                             Label("KEY_DELETE", systemImage: "trash.fill")
                         }
@@ -45,9 +53,8 @@ struct YarnStockStatusListView: View {
                         Button() {
                             editStatus = status
                             showChangeDefaultAlert = true
-//                            changeDefaultStatus(defaultStatus: status)
                         } label: {
-                            Label("デフォルトにする", systemImage: "star.fill")
+                            Label("KEY_SET_DEFAULT", systemImage: "star.fill")
                         }
                         .tint(.cyan)
                         
@@ -67,9 +74,7 @@ struct YarnStockStatusListView: View {
             }
             .onMove(perform: moveStatus)
         }
-        .navigationTitle(Text("KEY_EDIT_INVENTORY_STATUS"))
-//        .scrollContentBackground(.hidden)
-//        .background(ColorManager.listBackground) // 背景色を設定
+        .navigationTitle(Text("KEY_INDEX_INVENTORY_STATUS"))
         .toolbar {
             ToolbarItemGroup {
                 Button {
@@ -85,8 +90,6 @@ struct YarnStockStatusListView: View {
                     Button("KEY_CANCEL", role: .cancel){
                         inputStatusName = ""
                     }
-//                } message: {
-//                    Text("ステータスの名前を入力します。")
                 }
             }
         }
@@ -103,8 +106,6 @@ struct YarnStockStatusListView: View {
             Button("KEY_CANCEL", role: .cancel){
                 inputStatusName = ""
             }
-//        } message: {
-//            Text("KEY_RENAME_STATUS")
         }
         .alert("KEY_DEFAULT_STATUS", isPresented: $showChangeDefaultAlert) {
             Button("KEY_CHANGE"){
@@ -132,8 +133,8 @@ struct YarnStockStatusListView: View {
         } message: {
             Text("KEY_DELETE_STATUS_CONFIRM")
         }
-
-
+        
+        
     }
     
     private func addStatus() {
@@ -169,10 +170,6 @@ struct YarnStockStatusListView: View {
                 old.isDefault = false
             }
             defaultStatus.isDefault = true
-//            if oldDefault != nil {
-//                oldDefault!.isDefault = false
-//                defaultStatus.isDefault = true
-//            }
             try? modelContext.save()
         }
     }
@@ -186,13 +183,13 @@ struct YarnStockStatusListView: View {
             try? modelContext.save()
         }
     }
-
-}
-
-#Preview {
-    NavigationStack {
-        YarnStockStatusListView()
-            // .modelContainer(previewYarn)
-    }
     
 }
+
+//#Preview {
+//    NavigationStack {
+//        YarnStockStatusListView()
+//             .modelContainer(previewYarn)
+//    }
+//
+//}
