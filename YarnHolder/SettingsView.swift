@@ -81,132 +81,6 @@ struct SettingsView: View {
                     //                    .pickerStyle(.navigationLink)
                 }
                 Section {
-                    NavigationLink{
-                        List{
-                            Button {
-                                appIcon = ""
-                                UIApplication.shared.setAlternateIconName(nil)
-                            } label: {
-                                HStack {
-                                    Image("PreviewAppIconDefault")
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 48, height: 48)
-                                        .clipped()
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.black.opacity(0.3), lineWidth: 0.5)
-                                        )
-                                    Text("デフォルト")
-//                                        .foregroundStyle(.primary)
-                                }
-                            }
-                            .tint(.primary)
-//                            .buttonStyle(.plain)
-                            Button {
-                                appIcon = "Red"
-                                UIApplication.shared.setAlternateIconName("AppIconRed")
-                            } label: {
-                                HStack {
-                                    Image("PreviewAppIconRed")
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 48, height: 48)
-                                        .clipped()
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.black.opacity(0.3), lineWidth: 0.5)
-                                        )
-                                    Text("KEY_COLOR_RED")
-                                    //                                        .foregroundStyle(.primary)
-                                }
-                            }
-                            .tint(.primary)
-                            Button {
-                                appIcon = "Blue"
-                                UIApplication.shared.setAlternateIconName("AppIconBlue")
-                            } label: {
-                                HStack {
-                                    Image("PreviewAppIconBlue")
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 48, height: 48)
-                                        .clipped()
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.black.opacity(0.3), lineWidth: 0.5)
-                                        )
-                                    Text("KEY_COLOR_BLUE")
-                                    //                                        .foregroundStyle(.primary)
-                                }
-                            }
-                            .tint(.primary)
-//                            .buttonStyle(.plain)
-                            Button {
-                                appIcon = "Green"
-                                UIApplication.shared.setAlternateIconName("AppIconGreen")
-                            } label: {
-                                HStack {
-                                    Image("PreviewAppIconGreen")
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 48, height: 48)
-                                        .clipped()
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.black.opacity(0.3), lineWidth: 0.5)
-                                        )
-                                    Text("KEY_COLOR_GREEN")
-//                                        .foregroundStyle(.primary)
-                                }
-                            }
-                            .tint(.primary)
-//                            .buttonStyle(.plain)
-                            Button {
-                                appIcon = "Yellow"
-                                UIApplication.shared.setAlternateIconName("AppIconYellow")
-                            } label: {
-                                HStack {
-                                    Image("PreviewAppIconYellow")
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 48, height: 48)
-                                        .clipped()
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.black.opacity(0.3), lineWidth: 0.5)
-                                        )
-                                    Text("KEY_COLOR_YELLOW")
-//                                        .foregroundStyle(.primary)
-                                }
-                            }
-                            .tint(.primary)
-//                            .buttonStyle(.plain)
-                        }
-                        .navigationTitle(String(localized: "KEY_APP_ICON"))
-                    } label: {
-                        HStack {
-                            Label("KEY_APP_ICON", systemImage: "app")
-                            Spacer()
-                            let previewImage = appIcon != "" ? "PreviewAppIcon\(appIcon)" : "PreviewAppIconDefault"
-                            Image(previewImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 32, height: 32)
-                                .clipped()
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.black.opacity(0.3), lineWidth: 0.5)
-                                )
-
-                        }
-                    }
                     Picker(selection: $tmpAppColorTheme) {
                         ForEach(colorThemes, id: \.self) { color in
                             HStack {
@@ -220,11 +94,6 @@ struct SettingsView: View {
                         Label("KEY_THEME_COLOR", systemImage: "paintpalette")
                     }
                     .pickerStyle(.navigationLink)
-//                    NavigationLink {
-//                        //
-//                    } label: {
-//                        Label("KEY_APP_ICON", systemImage: "app")
-//                    }
                     Picker(
                         selection: $appearanceMode,
                         label: Label("KEY_APPEARANCE_MODE", systemImage: "circle.righthalf.filled")
@@ -245,10 +114,8 @@ struct SettingsView: View {
                             }, icon: {
                                 Image(systemName: "globe")
                             })
-                            //                        Label("KEY_LANGUAGE", systemImage: "globe")
                         }
                         Spacer()
-//                        let code = locale.language.languageCode?.identifier ?? ""
                         Text("KEY_SYSTEM_LANGUAGE")
                             .foregroundColor(.secondary)
                     }
@@ -278,16 +145,6 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("KEY_SETTINGS")
-//            .toolbar {
-//                ToolbarItem(placement: .topBarTrailing) {
-//                    Button {
-//                        presentationMode.wrappedValue.dismiss()
-//                    } label: {
-//                        Text("KEY_CLOSE")
-//                    }
-//                }
-//            }
-
         } detail: {
             Text("")
         }
