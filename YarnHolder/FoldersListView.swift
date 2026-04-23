@@ -16,18 +16,15 @@ struct FoldersListView: View {
     @Query var folders: [Folder]
     @Query var tags: [Tag]
     @Query var yarns: [YarnInfo]
-
-//    @Binding var selectedFolder: Folder?
-//    @Binding var selectedYarn: YarnInfo?
-
+    
     @State private var showSettingsSheet = false
-
+    
     // フォルダ関連
     @State private var showFolderAddSheet = false
     @State private var showFolderEditSheet = false
     @State private var inputFolder: InputFolder = .init()
     @State private var foldersEditViewComplete = false
-
+    
     @State private var tmpEditFolder: Folder? = nil
     @State private var tmpDeleteFolder: Folder? = nil
     @State private var showFolderDeleteSheet = false
@@ -38,16 +35,11 @@ struct FoldersListView: View {
     @State private var inputTag: InputTag = .init()
     @State private var tagEditViewComplete = false
     @State private var tmpEditTag: Tag? = nil
-
-//
-//    @State private var tmpEditFolder: Folder? = nil
-//    @State private var tmpDeleteFolder: Folder? = nil
-//    @State private var showFolderDeleteSheet = false
-
+    
     // 新規毛糸作成
     @State private var inputYarnInfo: InputYarnInfo = .init()
     @State private var inputYarnMaterials: [InputYarnMaterial] = [.init()]
-
+    
     var countAllStocks: Int {
         var cnt: Int = 0
         for yarn in yarns {
@@ -58,12 +50,12 @@ struct FoldersListView: View {
         return cnt
     }
     var body: some View {
-        List(/*selection: $selectedFolder*/) {
+        Form(/*selection: $selectedFolder*/) {
             Section {
                 //                    NavigationLink("KEY_ALL_YARNS", value: Optional<Folder>.none)
                 //                        .tag(Optional.nilAsFolder)
                 NavigationLink {
-//                    YarnsListView(/*folder: selectedFolder, selectedYarn: $selectedYarn*/)
+                    //                    YarnsListView(/*folder: selectedFolder, selectedYarn: $selectedYarn*/)
                     YarnsListView()
                 } label: {
                     HStack{
@@ -72,7 +64,7 @@ struct FoldersListView: View {
                         Text("\(yarns.count)")
                             .foregroundColor(.secondary)
                             .font(.system(.body, design: .rounded))
-
+                        
                     }
                 }
                 NavigationLink{
@@ -100,11 +92,8 @@ struct FoldersListView: View {
                         } label: {
                             //                            ListTitleButtonView(title: "KEY_ADD")
                             Label("KEY_ADD", systemImage: "folder.badge.plus")
-                                .fontWeight(.bold)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .buttonBorderShape(.capsule)
+                        .listHeaderButtonStyle()
                         .sensoryFeedback(.success, trigger: showFolderAddSheet)
                     }
             ) {
@@ -157,6 +146,20 @@ struct FoldersListView: View {
                         }
                         .tint(.orange)
                     }
+                    //                    .confirmationDialog(
+                    //                        "KEY_DELETE_FOLDER_CONFIRM",
+                    //                        isPresented: $showFolderDeleteSheet,
+                    //                        titleVisibility: .visible
+                    //                    ) {
+                    //                        Button("KEY_CANCEL", role: .cancel) {
+                    //                            showFolderDeleteSheet = false
+                    //                        }
+                    //                        Button("KEY_DELETE", role: .destructive) {
+                    //                            showFolderDeleteSheet = false
+                    //                            deleteFolder()
+                    //                        }
+                    //                    }
+                    
                     
                 }
                 .onMove(perform: moveFolder)
@@ -173,11 +176,8 @@ struct FoldersListView: View {
                         } label: {
                             //                            ListTitleButtonView(title: "KEY_ADD")
                             Label("KEY_ADD", systemImage: "plus")
-                                .fontWeight(.bold)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .buttonBorderShape(.capsule)
+                        .listHeaderButtonStyle()
                         .sensoryFeedback(.success, trigger: showTagAddSheet)
                     }
             ) {
@@ -187,26 +187,18 @@ struct FoldersListView: View {
                     } label:{
                         HStack{
                             TaglabelView(tag: tag)
-//                            Label(
-//                                title: {
-//                                    Text(tag.name)
-//                                },icon: {
-//                                    Image(systemName: "number")
-//                                        .foregroundColor(tag.color)
-//                                }
-//                            )
                             Spacer()
                             if let wrappedYarns = tag.yarns{
                                 Text("\(wrappedYarns.count)")
                                     .font(.system(.body, design: .rounded))
                                     .foregroundColor(.secondary)
-
+                                
                             }
                         }
                     }
                     .padding(.vertical, 4)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-//                        // スワイプ＞削除
+                        //                        // スワイプ＞削除
                         Button(role: .destructive) {
                             deleteTag(deleteTag: tag)
                             
@@ -214,7 +206,8 @@ struct FoldersListView: View {
                             Label("KEY_DELETE", systemImage: "trash.fill")
                         }
                         .tint(.red)
-//                        // スワイプ＞更新
+                        
+                        //                        // スワイプ＞更新
                         Button {
                             tmpEditTag = tag
                             inputTag.name = tag.name
@@ -231,26 +224,7 @@ struct FoldersListView: View {
             }
         }
         .navigationTitle("KEY_STASH")
-//        .toolbarTitleDisplayMode(.inline)
-//        .toolbar {
-//            ToolbarItemGroup(placement: .topBarLeading) {
-//                Button {
-//                    showSettingsSheet = true
-//                } label: {
-//                    Label("KEY_SETTINGS", systemImage: "gearshape")
-//                }
-//            }
-//            ToolbarItemGroup(placement: .bottomBar) {
-//                
-//                Spacer()
-//                Button {
-//                    showFolderAddSheet = true
-//                } label: {
-//                    Label("フォルダ作成", systemImage: "folder.badge.plus")
-//                }
-//            }
-
-//        }
+        
         // フォルダ作成画面シート
         .sheet(isPresented: $showFolderAddSheet, onDismiss: {
             // フォルダ作成処理
@@ -274,18 +248,18 @@ struct FoldersListView: View {
             )
         })
         // フォルダ削除確認用
-        .actionSheet(isPresented: $showFolderDeleteSheet){
-            ActionSheet(
-                title: Text("KEY_DELETE_FOLDER_CONFIRM"),
-                //                message: Text("削除後は戻せません。削除してもよろしいですか？"),
-                buttons:[
-                    .destructive(Text("KEY_DELETE")){
-                        deleteFolder()
-                    },
-                    .cancel()
-                ]
-            )
-        }
+        //        .actionSheet(isPresented: $showFolderDeleteSheet){
+        //            ActionSheet(
+        //                title: Text("KEY_DELETE_FOLDER_CONFIRM"),
+        //                //                message: Text("削除後は戻せません。削除してもよろしいですか？"),
+        //                buttons:[
+        //                    .destructive(Text("KEY_DELETE")){
+        //                        deleteFolder()
+        //                    },
+        //                    .cancel()
+        //                ]
+        //            )
+        //        }
         // タグ作成画面シート
         .sheet(isPresented: $showTagAddSheet, onDismiss: {
             // タグ作成処理
@@ -308,14 +282,23 @@ struct FoldersListView: View {
                 isEntry: false
             )
         })
-
+        
         // 設定画面シート
         .sheet(isPresented: $showSettingsSheet, onDismiss: {
         }, content: {
             SettingsView()
                 .preferredColorScheme(colorScheme == .dark ? .dark : .light)
         })
-
+        .alert("KEY_DELETE_FOLDER_CONFIRM", isPresented: $showFolderDeleteSheet) {
+            Button("KEY_CANCEL", role: .cancel){
+                //                editStatus = nil
+            }
+            Button("KEY_DELETE", role: .destructive) {
+                //                showFolderDeleteSheet = false
+                deleteFolder()
+            }
+        }
+        
     }
     private func addFolder() {
         defer {
@@ -347,7 +330,7 @@ struct FoldersListView: View {
         }
         
         withAnimation {
-//            let colorComponents = ColorComponents.fromColor(inputFolder.color)
+            //            let colorComponents = ColorComponents.fromColor(inputFolder.color)
             
             if let folder = tmpEditFolder {
                 folder.name = inputFolder.name
@@ -383,7 +366,7 @@ struct FoldersListView: View {
                                         modelContext.delete(detail)
                                     }
                                 }
-                                try? modelContext.save()
+                                //                                try? modelContext.save()
                                 modelContext.delete(stock)
                             }
                         }
@@ -392,12 +375,12 @@ struct FoldersListView: View {
                                 modelContext.delete(swatch)
                             }
                         }
-                        try? modelContext.save()
+                        //                        try? modelContext.save()
                         modelContext.delete(yarn)
                         try? modelContext.save()
                     }
                 }
-                try? modelContext.save()
+                //                try? modelContext.save()
                 modelContext.delete(folder)
                 try? modelContext.save()
             }
@@ -457,9 +440,8 @@ struct FoldersListView: View {
             try? modelContext.save()
         }
     }
-
-//
-//    private func deleteTag(deleteTag: Tag) {
-//        modelContext.delete(deleteTag)
-//    }
 }
+
+//#Preview{
+//    FoldersListView()
+//}

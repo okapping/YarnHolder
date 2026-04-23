@@ -377,12 +377,12 @@ struct YarnsDetailAdditionalInfoView: View {
                 isEntry: false
             )
         })
-        .fullScreenCover(isPresented: $showFullImage, onDismiss: {
-            showImages = []
-        }, content: {
-            FullImagesView(images: $showImages, selectIndex: .constant(0), namespace: namespace)
-                .navigationTransition(.zoom(sourceID: trackingId, in: namespace))
-        })
+//        .fullScreenCover(isPresented: $showFullImage, onDismiss: {
+//            showImages = []
+//        }, content: {
+//            FullImagesView(images: $showImages, selectIndex: .constant(0), namespace: namespace)
+//                .navigationTransition(.zoom(sourceID: trackingId, in: namespace))
+//        })
         .fullScreenCover(isPresented:$showImagePreviewSheet){
             ImagePreviewView(imageData: $showImagePreviewImage, sourceId: $showImagePreviewSourceId, namespace: namespace)
         }

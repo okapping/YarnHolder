@@ -11,18 +11,17 @@ import SwiftData
 struct StocksDetailEditView: View {
     @Query var stockStatuses: [YarnStockStatus]
     
-//    @State var detail: InputYarnStockDetail = .init
+    //    @State var detail: InputYarnStockDetail = .init
     @State var detail: YarnStockDetail
     
     @State var tmpWeight: Double = 0
     @State var tmpLength: Double = 0
     @State var tmpUsageRatio: Double = 1
     
-//    @State var sliderChanging: Bool = false
+    //    @State var sliderChanging: Bool = false
     @FocusState var focus: Bool
     @FocusState var focusForWeight: Bool
     @FocusState var focusForLength: Bool
-
     
     private var numberFormatter: NumberFormatter {
         let formatter = NumberFormatter()
@@ -32,7 +31,6 @@ struct StocksDetailEditView: View {
         formatter.maximum = 1000
         return formatter
     }
-        
     var body: some View {
         List{
             Section {
@@ -47,24 +45,18 @@ struct StocksDetailEditView: View {
                     VStack {
                         Text("KEY_WEIGHT")
                             .font(.system(.body, design: .rounded))
-                        //                    .fontWeight(.bold)
                         TextField("00", value: $tmpWeight, formatter: numberFormatter)
                             .font(.system(.largeTitle, design: .rounded))
                             .fontWeight(.bold)
                             .multilineTextAlignment(TextAlignment.center)
-                        //                    .frame(width : 60.0)
                             .padding(6)
-                        //                    .background(Color(UIColor.tertiarySystemFill))
-                        //                    .cornerRadius(5)
                             .keyboardType(.decimalPad)
-                        //                    .multilineTextAlignment(.trailing)
                             .focused(self.$focusForWeight)
                             .onChange(of: tmpWeight) {
                                 if focusForWeight || focusForLength {
                                     detail.weight = tmpWeight
                                 }
                                 if detail.isLink {
-//                                    let tmpW = detail.info.weight ?? 100
                                     let tmpW = detail.yarnStock?.yarnInfo?.weight ?? 100
                                     tmpUsageRatio = tmpWeight / tmpW
                                 }
@@ -76,14 +68,11 @@ struct StocksDetailEditView: View {
                             .fill(detail.isLink ? .blue : .clear)
                             .frame(width: 40, height: 40)
                             .cornerRadius(10)
-                        
-                        //                    Image(systemName: detail.isLink ? "link.circle.fill" : "link.circle")
                         Image(systemName: "link")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 24, height: 24)
                             .foregroundStyle(detail.isLink ? .white : .secondary)
-                        //                        .contentTransition(.symbolEffect(.replace.offUp))
                             .padding()
                     }
                     .onTapGesture {
@@ -91,6 +80,7 @@ struct StocksDetailEditView: View {
                             detail.isLink.toggle()
                         }
                     }
+                    .sensoryFeedback(.success, trigger: detail.isLink)
                     Spacer()
                     VStack {
                         Text("KEY_LENGTH")
@@ -112,7 +102,7 @@ struct StocksDetailEditView: View {
                                     detail.length = tmpLength
                                 }
                                 if detail.isLink {
-//                                    let tmpL = detail.info.length ?? 100
+                                    //                                    let tmpL = detail.info.length ?? 100
                                     let tmpL = detail.yarnStock?.yarnInfo?.length ?? 100
                                     tmpUsageRatio = tmpLength / tmpL
                                 }
@@ -148,7 +138,7 @@ struct StocksDetailEditView: View {
                 } else {
                     VStack {
                         HStack {
-//                            let tmpW = detail.info.weight ?? 100
+                            //                            let tmpW = detail.info.weight ?? 100
                             let tmpW = detail.yarnStock?.yarnInfo?.weight ?? 100
                             Image(systemName: "scalemass.fill")
                                 .resizable()
@@ -167,9 +157,9 @@ struct StocksDetailEditView: View {
                             })
                         }
                         HStack {
-//                            let tmpL = detail.info.length ?? 100
+                            //                            let tmpL = detail.info.length ?? 100
                             let tmpL = detail.yarnStock?.yarnInfo?.length ?? 100
-                            Image(systemName: "arrow.left.and.right")
+                            Image(systemName: "glowplug")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 20, height: 20)
@@ -200,7 +190,6 @@ struct StocksDetailEditView: View {
                           axis: .vertical
                 )
                 .focused(self.$focus)
-                //                    .textFieldStyle(.roundedBorder)
             }
         }
         .toolbar {
@@ -212,26 +201,15 @@ struct StocksDetailEditView: View {
                         focusForWeight = false
                         focusForLength = false
                     }label: {
-//                        Image(systemName: "keyboard.chevron.compact.down")
                         Text("KEY_DONE")
                     }
                 }
             }
-            
         }
         .onAppear{
             tmpWeight = detail.weight
             tmpLength = detail.length
             tmpUsageRatio = detail.usageRatio
         }
-//        .onChange(of: tmpWeight){
-//            detail.weight = tmpWeight
-//        }
-//        .onChange(of: tmpLength){
-//            detail.length = tmpLength
-//        }
-//        .onChange(of: tmpUsageRatio){
-//            detail.usageRatio = tmpUsageRatio
-//        }
     }
 }
