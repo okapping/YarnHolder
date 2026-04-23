@@ -9,13 +9,6 @@ import SwiftUI
 import SwiftData
 
 
-//extension Optional where Wrapped == Folder {
-//    static var nilAsFolder: Wrapped? {
-//        nil
-//    }
-//}
-
-
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) var colorScheme
@@ -24,33 +17,11 @@ struct ContentView: View {
     
     @AppStorage("appColorTheme") var appColorTheme = 10
     
-//    @Query var yarns: [YarnInfo]
-//    @Query var folders: [Folder]
-
-//    @State private var inputYarnInfo: InputYarnInfo = .init()
-//    @State private var inputYarnMaterials: [InputYarnMaterial] = [.init()]
-//    @State private var inputYarnStocks: [InputYarnStock] = []
-//    @State private var showNewYarnInfoSheet = false
-//    @State private var yarnsEditViewComplete = false
-    
-//    @State private var showSettingsSheet = false
-
-//    @State private var selectedFolder: Folder? = nil
     @State private var selectedYarn: YarnInfo? = nil
-
+    
     @State private var preferredColumn = NavigationSplitViewColumn.content
     @State private var visibility: NavigationSplitViewVisibility = .all
-//    public var dynamicAccentColor: Color {
-//        if let yarn = selectedYarn {
-//            return yarn.symbolColor
-//        }
-//        if let folder = selectedFolder {
-//            return folder.color
-//        } else {
-//            return Color.secondary
-//        }
-//    }
-
+    
     @Query var stockStatuses: [YarnStockStatus]
     public func FirstLaunch() {
         
@@ -73,34 +44,22 @@ struct ContentView: View {
             }
         }
     }
-    // フォルダ関連
-//    @State private var showFolderAddSheet = false
-//    @State private var inputFolder: InputFolder = .init()
-//    @State private var foldersEditViewComplete = false
     
     var body: some View {
         TabView{
             NavigationSplitView(columnVisibility: $visibility) {
-                //            NavigationSplitView(/*preferredCompactColumn: $preferredColumn*/) {
                 FoldersListView()
-                //            FoldersListView(/*selectedFolder: $selectedFolder, selectedYarn: $selectedYarn*/)
+                    .tint(Color(getColorTheme(by: appColorTheme).sysName))
             } content: {
-                //            Text("No selected")
-                //            YarnsListView(folder: selectedFolder/*, selectedYarn: $selectedYarn*/)
-                ////                .tint(dynamicAccentColor)
-                //                .tint(Color(getColorTheme(by: appColorTheme).sysName))
             } detail: {
                 NavigationStack{
                     VStack {
                         Spacer()
-                        //                    GeometryReader { geometry in
                         Image("yarn")
                             .resizable()
                             .scaledToFit()
-                        //                            .frame(width: geometry.size.width) // 親ビューの幅に合わせる
                             .frame(width: 300)
                             .foregroundColor(Color(UIColor.secondarySystemBackground))
-                        //                    }
                         Spacer()
                         HStack {
                             Text("KEY_LET'S_CHOOSE_SOME_YARN")
@@ -112,34 +71,10 @@ struct ContentView: View {
                     }
                     .padding()
                 }
-                //            if let yarn = selectedYarn {
-                //                YarnsDetailView(yarnInfo: yarn)
-                //            } else {
-                //                ZStack {
-                //                    GeometryReader { geometry in
-                //                        Image("yarn")
-                //                            .resizable()
-                //                            .scaledToFit()
-                //                            .frame(width: geometry.size.width) // 親ビューの幅に合わせる
-                //                            .foregroundColor(Color(UIColor.secondarySystemBackground))
-                //                    }
-                //                    HStack {
-                //                        Text("KEY_LET'S_CHOOSE_SOME_YARN")
-                //                        Image(systemName: "music.quarternote.3")
-                //                    }
-                //                    .font(.largeTitle)
-                //                    .fontWeight(.heavy)
-                //
-                //                }
-                //                .padding()
-                //            }
-                
             }
             .tint(Color(getColorTheme(by: appColorTheme).sysName))
             .tabItem {
                 Label("KEY_STASH", image: "yarn")
-//                Image("yarn")
-//                Text("KEY_STASH")
             }
             ToolsListVIew()
                 .tint(Color(getColorTheme(by: appColorTheme).sysName))
@@ -151,7 +86,7 @@ struct ContentView: View {
                 .tabItem {
                     Label("KEY_SETTINGS", systemImage: "gearshape")
                 }
-
+            
         }
         .tint(Color(getColorTheme(by: appColorTheme).sysName))
         .onAppear{
@@ -159,33 +94,10 @@ struct ContentView: View {
         }
     }
     init() {
-//        if stockStatus.count == 0 {
-//            print("make stock status")
-//            let statusNew = YarnStockStatus(
-//                orderIndex: stockStatus.count,
-//                name: "新品"
-//            )
-//            modelContext.insert(statusNew)
-//            let statusOld = YarnStockStatus(
-//                orderIndex: stockStatus.count,
-//                name: "使い古し"
-//            )
-//            modelContext.insert(statusOld)
-//        }
-//        let navBarAppearance = UINavigationBarAppearance()
-//        navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.red, .font: UIFont(name: "ArialRoundedMTBold", size: 35)!]
-//        navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.red, .font: UIFont(name: "ArialRoundedMTBold", size: 20)!]
-//        navBarAppearance.setBackIndicatorImage(UIImage(systemName: "arrow.turn.up.left"), transitionMaskImage: UIImage(systemName: "arrow.turn.up.left"))
-//
-//        UINavigationBar.appearance().standardAppearance = navBarAppearance
-//        UINavigationBar.appearance().scrollEdgeAppearance = navBarAppearance
-//        UINavigationBar.appearance().compactAppearance = navBarAppearance
-//        
     }
 }
 
 #Preview {
     ContentView()
-//            .modelContainer(for: YarnInfo.self, inMemory: true)
-        // .modelContainer(previewYarn)
+//         .modelContainer(previewYarn)
 }

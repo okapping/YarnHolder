@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ToolsListRowView: View {
-//    @AppStorage("appColorTheme") var appColorTheme = 10
     
     var symbol: String
     var color: Color
@@ -17,7 +16,7 @@ struct ToolsListRowView: View {
     var body: some View {
         HStack(spacing: 0) {
             Label("", systemImage: symbol)
-                .tint(color)
+                .foregroundStyle(color)
             VStack(alignment: .leading){
                 Text(LocalizedStringKey(title))
                     .font(.headline)
@@ -31,12 +30,11 @@ struct ToolsListRowView: View {
     }
 }
 struct ToolsListVIew: View {
-    
     @State private var showToolsRulerView = false
     
     var body: some View {
         NavigationSplitView {
-            List{
+            Form{
                 Section(){
                     NavigationLink{
                         ToolsSimpleCounterView()
@@ -68,6 +66,7 @@ struct ToolsListVIew: View {
                             detail: "KEY_DETAIL_RULER"
                         )
                     }
+                    .buttonStyle(.plain)
                 }
                 Section(){
                     NavigationLink{
@@ -91,24 +90,20 @@ struct ToolsListVIew: View {
                         )
                     }
                 }
-//                Section(header:Text("開発")){
-//                    NavigationLink{
-//                        FeedbackListView()
-//                    }label: {
-//                        Label("感触", systemImage: "slowmo")
-//                    }
-//                    NavigationLink{
-//                        MeshGradientView()
-//                    }label: {
-//                        Label("グラデーション", systemImage: "paintpalette")
-//                    }
-//                }
+                // ***********DEBUG***********
+                //                Section{
+                //                    NavigationLink{
+                //                        DebugView()
+                //                    } label: {
+                //                        Text("デバック")
+                //                    }
+                //                }
+                // ***********DEBUG***********
             }
             .navigationTitle("KEY_TOOLS")
         } detail: {
             Text("KEY_SELECT_TOOL")
         }
-//        .statusBarHidden(true)
         .fullScreenCover(isPresented: $showToolsRulerView, onDismiss: {
         }, content: {
             ToolsRulerView()

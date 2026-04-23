@@ -52,46 +52,6 @@ struct YarnsDetailLabelInfoView: View {
         // *******************************************
         List {
             // *******************************************
-            // 画像
-            Section(
-//                header: ListTitleView(title: "画像")
-            ) {
-                if yarnInfo.images.isEmpty {
-//                    Text("KEY_NOT_REGISTERED")
-//                        .listStyle(.plain)
-                } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(Array(yarnInfo.images.enumerated()), id: \.element) { i, image in
-                                if let uiImage = UIImage(data: image) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .clipShape(RoundedRectangle(cornerRadius: 10)) // 角を丸くした四角形
-                                        .frame(height:150)
-                                        .onTapGesture {
-                                            for tmpImage in yarnInfo.images{
-                                                if let tmpUiImage = UIImage(data: tmpImage) {
-                                                    let appendImage = showImageContainer(uiImage: tmpUiImage)
-                                                    showImages.append(appendImage)
-                                                }
-                                            }
-                                            print("detail view cnt = \(showImages.count)")
-                                            showImageIndex = i
-                                            showFullImage = true
-                                        }
-
-                                }
-                            }
-                        }
-                    }
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                }
-
-
-            }
-            // *******************************************
             // 素材
             Section(
                 header:
@@ -107,12 +67,9 @@ struct YarnsDetailLabelInfoView: View {
                     }
                     ForEach(wrappedMaterials.sorted(by: { $0.orderIndex < $1.orderIndex })) {yarnMaterial in
                         HStack {
-                            //                        Text("\(yarnMaterial.orderIndex)")
                             let material = getYarnMaterial(by: yarnMaterial.materialId)
                             let name = LocalizedStringKey(material.name)
                             Text(name)
-                            //                            Text(Material(rawValue: yarnMaterial.materialId)!.name)
-                            
                             Spacer()
                             Text("\(yarnMaterial.percentage)%")
                         }
@@ -164,16 +121,6 @@ struct YarnsDetailLabelInfoView: View {
                         }
                     }
                 }
-//                HStack {
-//                    if yarnInfo.laundrySymbols.isEmpty {
-//                        Text("KEY_NOT_REGISTERED")
-//                    }
-//                    HFlow(spacing: 8) {
-//                        ForEach(yarnInfo.laundrySymbols, id: \.self) { symId in
-//                            LaundrySymbolImageView(symbolId: symId)
-//                        }
-//                    }
-//                }
             }
             
             // *******************************************

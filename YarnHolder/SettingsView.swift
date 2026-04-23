@@ -23,7 +23,7 @@ struct SettingsView: View {
     @AppStorage("lengthUnit") var lengthUnit = "m"
     
     @AppStorage("unlockFeature") var unlockFeature: Bool = false
-//    @Query private var tags: [Tag]
+    //    @Query private var tags: [Tag]
     @State private var tmpAppColorTheme = 0
     @State private var showTagsSetting = false
     @State private var showVersionAbout = false
@@ -60,8 +60,7 @@ struct SettingsView: View {
                     NavigationLink{
                         YarnStockStatusListView()
                     } label: {
-                        Label("KEY_INVENTORY_STATUS_DETAIL", image: "yarn")
-//                        Text()
+                        Label("KEY_INVENTORY_STATUS_DETAIL", image: "yarn.badge.sparkles")
                     }
                     Picker(selection: $weightUnit) {
                         Text("g").tag("g")
@@ -75,10 +74,9 @@ struct SettingsView: View {
                         Text("m").tag("m")
                         Text("yd").tag("yd")
                     } label: {
-                        Label("KEY_LENGTH_UNIT", systemImage: "arrow.left.and.right")
+                        Label("KEY_LENGTH_UNIT", systemImage: "glowplug")
                     }
                     .tint(Color(getColorTheme(by: tmpAppColorTheme).sysName))
-                    //                    .pickerStyle(.navigationLink)
                 }
                 Section {
                     Picker(selection: $tmpAppColorTheme) {
@@ -119,29 +117,18 @@ struct SettingsView: View {
                         Text("KEY_SYSTEM_LANGUAGE")
                             .foregroundColor(.secondary)
                     }
-
                 }
                 Section() {
-                    NavigationLink {
-                        //
-                    } label: {
+                    Link(destination: URL(string: "https://yarnholder.github.io/index.html")!){
                         Label("KEY_HELP", systemImage: "questionmark")
                     }
-                    NavigationLink {
-                        //
-                    } label: {
-                        Label("KEY_FEEDBACK", systemImage: "info.bubble")
-                    }
-                    NavigationLink {
-                        //
-                    } label: {
-                        Label("KEY_SHARE_APP", systemImage: "arrowshape.turn.up.right")
-                    }
-                    NavigationLink {
-                        //
-                    } label: {
+                    ShareLink("KEY_SHARE_APP", item: URL(string: "https://apps.apple.com/jp/app/yarn-holder/id6756721966")!)
+                    Link(destination: URL(string: "https://apps.apple.com/jp/app/id6756721966?action=write-review")!){
                         Label("KEY_REVIEW_ON_APP_STORE", systemImage: "star")
                     }
+                } footer: {
+                    Spacer()
+                    Text("Version 1.1.0")
                 }
             }
             .navigationTitle("KEY_SETTINGS")
@@ -154,12 +141,10 @@ struct SettingsView: View {
         .onChange(of: tmpAppColorTheme){
             appColorTheme = tmpAppColorTheme
         }
-
+        
     }
 }
 
 #Preview {
     SettingsView()
-//        .modelContainer(previewFolderContainer)
-    //        .modelContainer(previewEventsContainer)
 }
