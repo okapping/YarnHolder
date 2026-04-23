@@ -91,13 +91,13 @@ struct ToolsListVIew: View {
                     }
                 }
                 // ***********DEBUG***********
-                //                Section{
-                //                    NavigationLink{
-                //                        DebugView()
-                //                    } label: {
-                //                        Text("デバック")
-                //                    }
-                //                }
+//                                Section{
+//                                    NavigationLink{
+//                                        DebugView()
+//                                    } label: {
+//                                        Text("デバック")
+//                                    }
+//                                }
                 // ***********DEBUG***********
             }
             .navigationTitle("KEY_TOOLS")
