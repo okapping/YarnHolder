@@ -1,5 +1,5 @@
 # YarnHolder（毛糸ホルダー）
-![app icon](./docs/assets/img/appIcon.png)
+![app icon](./docs/assets/img/appIcon_resize.png)  
 Let's manage yarn with this app.  
 自分の毛糸をアプリで一括管理
 

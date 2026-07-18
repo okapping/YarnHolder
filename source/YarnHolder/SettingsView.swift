@@ -119,7 +119,7 @@ struct SettingsView: View {
                     }
                 }
                 Section() {
-                    Link(destination: URL(string: "https://yarnholder.github.io/index.html")!){
+                    Link(destination: URL(string: "https://okapping.github.io/YarnHolder/")!){
                         Label("KEY_HELP", systemImage: "questionmark")
                     }
                     ShareLink("KEY_SHARE_APP", item: URL(string: "https://apps.apple.com/jp/app/yarn-holder/id6756721966")!)
@@ -128,7 +128,7 @@ struct SettingsView: View {
                     }
                 } footer: {
                     Spacer()
-                    Text("Version 1.1.0")
+                    Text("Version 1.2.0")
                 }
             }
             .navigationTitle("KEY_SETTINGS")
