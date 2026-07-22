@@ -9,8 +9,6 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-
-
 struct SettingsView: View {
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.locale) var locale
@@ -23,7 +21,6 @@ struct SettingsView: View {
     @AppStorage("lengthUnit") var lengthUnit = "m"
     
     @AppStorage("unlockFeature") var unlockFeature: Bool = false
-    //    @Query private var tags: [Tag]
     @State private var tmpAppColorTheme = 0
     @State private var showTagsSetting = false
     @State private var showVersionAbout = false
@@ -126,9 +123,13 @@ struct SettingsView: View {
                     Link(destination: URL(string: "https://apps.apple.com/jp/app/id6756721966?action=write-review")!){
                         Label("KEY_REVIEW_ON_APP_STORE", systemImage: "star")
                     }
-                } footer: {
-                    Spacer()
-                    Text("Version 1.2.0")
+                }
+                Section() {
+                    HStack {
+                        Label("version", systemImage: "wrench.and.screwdriver")
+                        Spacer()
+                        Text("1.2.0")
+                    }
                 }
             }
             .navigationTitle("KEY_SETTINGS")
